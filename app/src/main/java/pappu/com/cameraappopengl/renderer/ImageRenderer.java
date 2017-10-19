@@ -1,19 +1,9 @@
 package pappu.com.cameraappopengl.renderer;
 
 import android.content.Context;
-import android.opengl.EGL14;
-import android.opengl.EGLContext;
-import android.opengl.EGLDisplay;
-import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.util.Log;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -27,33 +17,17 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
     private final float[] mtrxProjection = new float[16];
     private final float[] mtrxView = new float[16];
     private final float[] mtrxProjectionAndView = new float[16];
-//    private MaskRendererWrapper maskRenderer;
     private PreviewRenderer previewRenderer;
-    private boolean maskRenderOn = false;
     private int width = 0;
     private  int height = 0;
 //    private List<FrameRenderObserver> frameRenderObserverList = new ArrayList<>();
     int offsceenPreviewWidth, offScreenPreviewHeight;
-    private static final int RECORDING_OFF = 0;
-    private static final int RECORDING_ON = 1;
-    private static final int RECORDING_RESUMED = 2;
-    private boolean mRecordingEnabled = false;
-    private int mRecordingStatus = RECORDING_OFF;
-    private int mFrameCount;
     private static String TAG = "ImageRenderer";
-//    private MaskVideoCapture maskVideoCapture;
     private YUVGLRender yuvglRender;
-//    private BannerRenderer frameRenderer,waterMarkRenderer;
-
 
     private int[] offScreenFrameBufferId = new int[1];
     private int[] offScreenTexureId = new int[1];
-
-    EGLDisplay eglDisplay;
-    EGLSurface eglSurface;
-    EGLContext eglContext;
     private Context context;
-//    BannerItem frameItem,waterMarkItem;
     PreviewInfo previewInfo;
 
     private OnscreenTextureDraw onscreenTextureDraw;
@@ -63,98 +37,25 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
         this.offsceenPreviewWidth = (int) Math.ceil(previewWidth / 16.0) * 16;
         this.offScreenPreviewHeight = previewHeight;
         yuvglRender = new YUVGLRender();
-//        maskRenderer = new MaskRendererWrapper(context);
-//        maskRenderer.setYuvglRender(yuvglRender);
         previewRenderer = new PreviewRenderer(context);
         previewRenderer.setYuvglRender(yuvglRender);
         onscreenTextureDraw = new OnscreenTextureDraw();
     }
 
 
-
-//    public void setMaskInfo( final FaceMaskItem faceMaskItem) {
-//        maskRenderer.setMaskInfo(faceMaskItem, mtrxProjectionAndView);
-//    }
-//
-//    public void setFilter(final ImageFilterType imageFilterType) {
-//
-//        previewRenderer.intitPreviewShader(imageFilterType);
-//
-//    }
-
     public void changeCameraOrientation(int cameraId) {
         previewRenderer.changeCameraOrientation(cameraId);
     }
 
-//    public void setFrameItem(final BannerItem frameItem) {
-//        this.frameItem = frameItem;
-//        createFrameRender();
-//    }
-//
-//    public void clearFrameRendering() {
-//        if (frameRenderer != null) {
-//            frameRenderer.dispose();
-//            frameRenderer = null;
-//        }
-//    }
 
-//    private void createFrameRender() {
-//        this.clearFrameRendering();
-//        if(previewInfo!=null && frameItem!=null){
-//            frameRenderer = new BannerRenderer(context,frameItem,previewInfo.preiviewHeight,previewInfo.previewWidth,mtrxProjectionAndView);
-//        }
-//
-//    }
-//
-//    public void clearWatermarkRendering() {
-//        if (waterMarkRenderer != null) {
-//            waterMarkRenderer.dispose();
-//            waterMarkRenderer = null;
-//        }
-//    }
-//
-//    private void createWatermarkRenderer() {
-//        this.clearWatermarkRendering();
-//        if(waterMarkItem!=null && previewInfo!=null)
-//        waterMarkRenderer = new BannerRenderer(context,waterMarkItem,previewInfo.preiviewHeight,previewInfo.previewWidth,mtrxProjectionAndView);
-//    }
-//
-//    public void setWaterMarkItem(final BannerItem waterMarkItem){
-//       this.waterMarkItem = waterMarkItem;
-//
-//    }
-
-
-    public void setMaskDrawOff(){
-        maskRenderOn = false;
-    }
-    public void setMaskDrawOn(){
-        maskRenderOn = true;
-    }
 
     public void updateYUVBuffers(final byte[] imageBuf) {
         previewRenderer.updateYUVBuffers(imageBuf, offScreenPreviewHeight, offsceenPreviewWidth);
     }
 
-//    public void updateMaskVertices(final DetectedFaceShape faceShape, final Orientation orientation){
-//        for (int index = 0; index < faceShape.getLandmarks().length; ++index) {
-//            TransformationHelper.transformLandmarkPoint(faceShape.getLandmarkPoint(index),orientation,previewInfo.previewWidth,previewInfo.preiviewHeight, offsceenPreviewWidth, offScreenPreviewHeight);
-//        }
-//        if(faceShape.extrapolateParts!=null){
-//            for (int index = 0; index < faceShape.extrapolateParts.length; ++index) {
-//                TransformationHelper.transformLandmarkPoint(faceShape.extrapolateParts[index],orientation,previewInfo.previewWidth,previewInfo.preiviewHeight, offsceenPreviewWidth, offScreenPreviewHeight);
-//            }
-//        }
-//        faceShape.setFaceRect(TransformationHelper.transformRectangle(faceShape.getFaceRect(), orientation, previewInfo.previewWidth, previewInfo.preiviewHeight, offsceenPreviewWidth, offScreenPreviewHeight));
-//        maskRenderer.updateVertices(faceShape,previewInfo.previewWidth,previewInfo.preiviewHeight,orientation);
-//    }
-
-
-
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         previewRenderer.intitPreviewShader();
-//        maskRenderer.createMaskShader();
         onscreenTextureDraw.initOnScreenShaderProgramm(context);
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
@@ -166,7 +67,6 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
 
     void createOffScreenTexture(){
         GLES20.glGenFramebuffers(1, offScreenFrameBufferId, 0);
-
         GLES20.glGenTextures(1,offScreenTexureId,0);
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, offScreenTexureId[0]);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
@@ -182,13 +82,10 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
 
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
-
-        Log.d("ImageRenderer","offsceenPreviewWidth    "+offsceenPreviewWidth);
         this.width = width;
         this.height = height;
         GLES20.glViewport(0, 0, width, height);
         previewInfo = AppUtils.getadjustedPreview(width,height, offsceenPreviewWidth, offScreenPreviewHeight,null);
-//        createWatermarkRenderer();
         GLES20.glViewport(previewInfo.offsetX, previewInfo.offsetY, previewInfo.previewWidth, previewInfo.preiviewHeight);
 
         for (int i = 0; i < 16; i++) {
@@ -200,13 +97,7 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
         Matrix.orthoM(mtrxProjection, 0, 0f, previewInfo.previewWidth, 0.0f, previewInfo.preiviewHeight, 0, 10);
         Matrix.setLookAtM(mtrxView, 0, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
         Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxProjection, 0, mtrxView, 0);
-
         createOffScreenTexture();
-//        eglDisplay = EGL14.eglGetCurrentDisplay();
-//        eglSurface = EGL14.eglGetCurrentSurface(EGL14.EGL_DRAW);
-//        eglContext = EGL14.eglGetCurrentContext();
-//        if (EGL14.EGL_OPENGL_ES_API == EGL14.eglQueryAPI())
-//            SDKLoggerConfig.logD(TAG,"Current Api : EGL_OPENGL_ES_API");
     }
 
     void getFramebuffer(){
@@ -246,24 +137,13 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
 
     void renderOnBuffer(){
         previewRenderer.renderPreview();
-//        if(waterMarkRenderer!=null)
-//        waterMarkRenderer.render(1);
-//        if(maskRenderOn)
-//        {
-//            maskRenderer.Render(3);
-//        }
-//        if(frameRenderer!=null){
-//            frameRenderer.render(0);
-//        }
     }
 
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        Log.d("ImageRenderer","ondrraw    "+previewInfo.preiviewHeight+"    "+previewInfo.previewWidth);
         offScreenRender();
 //        getFramebuffer();
-//        drawOnSecondarySurface();
         onScreenDraw();
     }
 
@@ -274,99 +154,20 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
 //    public void detach(FrameRenderObserver frameRenderObserver) {
 //        frameRenderObserverList.remove(frameRenderObserver);
 //    }
-//    public int getWidth() {
-//        return width;
-//    }
-//
-//    public int getHeight() {
-//        return height;
-//    }
-//
-//    public int getOffsceenPreviewWidth() {
-//        return offScreenPreviewHeight;
-//    }
-//
-//    public int getOffScreenPreviewHeight() {
-//        return offsceenPreviewWidth;
-//    }
-//
-//    private void drawOnSecondarySurface() {
-//        updateRecordingState();
-//        if (mRecordingEnabled && maskVideoCapture.isReady()) {
-//            SDKLoggerConfig.logD(TAG, "Change to media codec surface");
-//            maskVideoCapture.makeCurrent();
-//            GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
-//            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
-//            GLES20.glViewport(0, 0, offScreenPreviewHeight, offsceenPreviewWidth);
-//            onscreenTextureDraw.onScreenRender(offScreenTexureId[0]);
-//            maskVideoCapture.frameAvailable();
-//            SDKLoggerConfig.logD(TAG, "Video Frame: " + ++mFrameCount);
-//            restoreDefaultSurface();
-//        }
-//    }
-//
-//    public void updateRecordingState() {
-//        // If the recording state is changing, take care of it here.  Ideally we wouldn't
-//        // be doing all this in onDrawFrame(), but the EGLContext sharing with GLSurfaceView
-//        // makes it hard to do elsewhere.
-//        if (mRecordingEnabled) {
-//            switch (mRecordingStatus) {
-//                case RECORDING_OFF:
-//                    SDKLoggerConfig.logD(TAG, "START recording");
-//                    // start recording
-//                    mRecordingStatus = RECORDING_ON;
-//                    eglContext = EGL14.eglGetCurrentContext();
-//                    maskVideoCapture.startRecording(eglContext);
-//                    restoreDefaultSurface();
-//                    break;
-//                case RECORDING_RESUMED:
-//                    SDKLoggerConfig.logD(TAG, "RESUME recording");
-//                    mRecordingStatus = RECORDING_ON;
-//                    eglContext = EGL14.eglGetCurrentContext();
-//                    maskVideoCapture.updateSharedContext(eglContext);
-//                    break;
-//                case RECORDING_ON:
-//                    // yay
-//                    break;
-//            }
-//        } else {
-//            switch (mRecordingStatus) {
-//                case RECORDING_ON:
-//                case RECORDING_RESUMED:
-//                    // stop recording
-//                    SDKLoggerConfig.logD(TAG, "STOP recording");
-//                    mRecordingStatus = RECORDING_OFF;
-//                    maskVideoCapture.stopRecording();
-//                    restoreDefaultSurface();
-//                    break;
-//                case RECORDING_OFF:
-//                    // yay
-//                    break;
-//            }
-//        }
-//    }
-//
-//    private void restoreDefaultSurface() {
-//        if (!EGL14.eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext)) {
-//            SDKLoggerConfig.logD(TAG,"Changing to default surface failed");
-//        }
-//    }
-//
-//    public void startRecording() {
-//        mRecordingEnabled = true;
-//    }
-//
-//    public void stopRecording() {
-//        mRecordingEnabled = false;
-//    }
-//
-//    public void cancelRecording() {
-//        mRecordingEnabled = false;
-//        mRecordingStatus = RECORDING_OFF;
-//    }
-//
-//    public void setMaskVideoCapture(MaskVideoCapture maskVideoCapture) {
-//        this.maskVideoCapture = maskVideoCapture;
-//    }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getOffsceenPreviewWidth() {
+        return offScreenPreviewHeight;
+    }
+
+    public int getOffScreenPreviewHeight() {
+        return offsceenPreviewWidth;
+    }
 
 }
