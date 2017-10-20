@@ -5,6 +5,9 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -23,6 +26,7 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
     int offsceenPreviewWidth, offScreenPreviewHeight;
     private static String TAG = "ImageRenderer";
     private YUVGLRender yuvglRender;
+    private boolean capture = false;
 
     private int[] offScreenFrameBufferId = new int[1];
     private int[] offScreenTexureId = new int[1];
@@ -46,7 +50,9 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
         previewRenderer.changeCameraOrientation(cameraId);
     }
 
-
+    public void captureImage(){
+        capture = true;
+    }
 
     public void updateYUVBuffers(final byte[] imageBuf) {
         previewRenderer.updateYUVBuffers(imageBuf, offScreenPreviewHeight, offsceenPreviewWidth);
@@ -100,20 +106,17 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
     }
 
     void getFramebuffer(){
-//
-//        if (!frameRenderObserverList.isEmpty()) {
-//            byte b[] = new byte[offsceenPreviewWidth * offScreenPreviewHeight * 4];
-//            ByteBuffer byteBuffer = ByteBuffer.wrap(b);
-//            byteBuffer.order(ByteOrder.nativeOrder());
-//            byteBuffer.position(0);
-//            GLES20.glReadPixels(0, 0, offScreenPreviewHeight, offsceenPreviewWidth, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, byteBuffer);
-//            for (FrameRenderObserver frameRenderObserver : frameRenderObserverList){
-//                frameRenderObserver.update(b);
-//                byteBuffer.clear();
-//            }
 
+        if (capture) {
+            byte b[] = new byte[offsceenPreviewWidth * offScreenPreviewHeight * 4];
+            ByteBuffer byteBuffer = ByteBuffer.wrap(b);
+            byteBuffer.order(ByteOrder.nativeOrder());
+            byteBuffer.position(0);
+            GLES20.glReadPixels(0, 0, offScreenPreviewHeight, offsceenPreviewWidth, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, byteBuffer);
+            byteBuffer.clear();
+            capture = false;
         }
-//    }
+    }
 
     void onScreenDraw(){
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
