@@ -40,9 +40,7 @@ import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.regex.Pattern;
 
-/**
- * Created by darrenl on 2016/3/30.
- */
+
 public class FileUtils {
     @NonNull
     public static final void copyFileFromRawToOthers(@NonNull final Context context, @RawRes int id, @NonNull final String targetPath) {
@@ -187,9 +185,5 @@ public class FileUtils {
         }
     }
 
-    public  static String getTemprorayVideoFilePath(){
-        final File OUTPUT_DIR = Environment.getExternalStorageDirectory();
-        return new File(OUTPUT_DIR, "Video.mp4").toString();
-    }
 
 }

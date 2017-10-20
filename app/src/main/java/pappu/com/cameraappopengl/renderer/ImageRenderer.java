@@ -20,7 +20,6 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
     private PreviewRenderer previewRenderer;
     private int width = 0;
     private  int height = 0;
-//    private List<FrameRenderObserver> frameRenderObserverList = new ArrayList<>();
     int offsceenPreviewWidth, offScreenPreviewHeight;
     private static String TAG = "ImageRenderer";
     private YUVGLRender yuvglRender;
@@ -147,13 +146,6 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
         onScreenDraw();
     }
 
-//    public void attach(FrameRenderObserver frameRenderObserver) {
-//        frameRenderObserverList.add(frameRenderObserver);
-//    }
-//
-//    public void detach(FrameRenderObserver frameRenderObserver) {
-//        frameRenderObserverList.remove(frameRenderObserver);
-//    }
     public int getWidth() {
         return width;
     }
