@@ -12,6 +12,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import pappu.com.cameraappopengl.datamodel.PreviewInfo;
+import pappu.com.cameraappopengl.listener.ImageSaveListener;
 import pappu.com.cameraappopengl.utils.AppUtils;
 
 
@@ -34,6 +35,7 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
     PreviewInfo previewInfo;
 
     private OnscreenTextureDraw onscreenTextureDraw;
+    private  ImageSaveListener imageSaveListener;
 
     public ImageRenderer(Context context, int previewWidth, int previewHeight){
         this.context = context;
@@ -52,6 +54,10 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
 
     public void captureImage(){
         capture = true;
+    }
+
+    public void setImageSaveListener(ImageSaveListener imageSaveListener){
+        this.imageSaveListener = imageSaveListener;
     }
 
     public void updateYUVBuffers(final byte[] imageBuf) {
@@ -113,6 +119,7 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
             byteBuffer.order(ByteOrder.nativeOrder());
             byteBuffer.position(0);
             GLES20.glReadPixels(0, 0, offScreenPreviewHeight, offsceenPreviewWidth, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, byteBuffer);
+            imageSaveListener.saveImage(b,offsceenPreviewWidth,offScreenPreviewHeight);
             byteBuffer.clear();
             capture = false;
         }
@@ -145,7 +152,7 @@ public class ImageRenderer implements GLSurfaceView.Renderer{
     @Override
     public void onDrawFrame(GL10 gl10) {
         offScreenRender();
-//        getFramebuffer();
+        getFramebuffer();
         onScreenDraw();
     }
 
