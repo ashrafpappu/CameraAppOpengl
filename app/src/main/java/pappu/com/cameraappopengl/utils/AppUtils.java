@@ -8,7 +8,7 @@ import pappu.com.cameraappopengl.datamodel.PreviewInfo;
 
 
 /**
- * Created by ipvision on 3/14/2017.
+ * Created by pappu on 3/14/2017.
  */
 
 public class AppUtils {
@@ -25,14 +25,8 @@ public class AppUtils {
         maxPreviewDimension = previewWidth > previewHeight ? previewWidth : previewHeight;
         double ratio = (double) minScreenDimension / minPreviewDimension;
         maxScreenDimension = (int) (maxPreviewDimension * ratio);
-//        if (orientation == Orientation.PotraitUp) {
-//            previewInfo.preiviewHeight = minScreenDimension;
-//            previewInfo.previewWidth = maxScreenDimension;
-//        }
-//        else {
-            previewInfo.preiviewHeight = maxScreenDimension;
-            previewInfo.previewWidth = minScreenDimension;
-//        }
+        previewInfo.preiviewHeight = maxScreenDimension;
+        previewInfo.previewWidth = minScreenDimension;
         previewInfo.offsetX =(parentViewWidth-previewInfo.previewWidth)/2;
         previewInfo.offsetY = (parentViewHeight-previewInfo.preiviewHeight)/2;
         return previewInfo;
