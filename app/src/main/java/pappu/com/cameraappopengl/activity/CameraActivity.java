@@ -2,6 +2,7 @@ package pappu.com.cameraappopengl.activity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -19,13 +20,16 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import pappu.com.cameraappopengl.R;
 import pappu.com.cameraappopengl.datamodel.CameraData;
 import pappu.com.cameraappopengl.datamodel.Orientation;
 import pappu.com.cameraappopengl.glview.GlSurfaceView;
+import pappu.com.cameraappopengl.listener.ImageSaveListener;
 import pappu.com.cameraappopengl.renderer.ImageRenderer;
+import pappu.com.cameraappopengl.utils.FileUtils;
 
 
 /**
@@ -33,7 +37,7 @@ import pappu.com.cameraappopengl.renderer.ImageRenderer;
  */
 
 
-public class CameraActivity extends Activity implements SensorEventListener, Camera.PreviewCallback,View.OnClickListener{
+public class CameraActivity extends Activity implements ImageSaveListener,SensorEventListener, Camera.PreviewCallback,View.OnClickListener{
 
     private Camera mCamera = null;
     private   int mCameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -69,6 +73,7 @@ public class CameraActivity extends Activity implements SensorEventListener, Cam
         setCamera();
         glSurfaceView = new GlSurfaceView(this);
         imageRenderer = new ImageRenderer(this,mFrameWidth,mFrameHeight);
+        imageRenderer.setImageSaveListener(this);
         glSurfaceView.setRenderer(imageRenderer);
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         previewLayout.addView(glSurfaceView);
@@ -81,7 +86,7 @@ public class CameraActivity extends Activity implements SensorEventListener, Cam
         switch (v.getId()){
             case R.id.capture_imgbutton:
                 Toast.makeText(this,"Saved Image Successfully", Toast.LENGTH_SHORT).show();
-
+                imageRenderer.captureImage();
                 break;
             case R.id.cameraflip_imagebutton:
                 flipcamera();
@@ -242,4 +247,10 @@ public class CameraActivity extends Activity implements SensorEventListener, Cam
         }
     }
 
+    @Override
+    public void saveImage(byte[] data, int width, int height) {
+        Bitmap bitmap = Bitmap.createBitmap(height, width, Bitmap.Config.ARGB_8888);
+        bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(data));
+        FileUtils.saveBitmapImage(bitmap,this);
+    }
 }
